@@ -2,9 +2,13 @@ const path = require('path');
 const uglify = require('uglifyjs-webpack-plugin');
 const htmlPlugin= require('html-webpack-plugin');
 const extractTextPlugin = require("extract-text-webpack-plugin");
-const website = {publicPath:"http://127.0.0.1:9527/"}
+const website = {publicPath:"http://127.0.0.1:9527/"};
+const purifyCssPlugin = require('purifycss-webpack');
+const glob = require('glob');
 
 module.exports = {
+    //打包调试文件
+    devtool: 'source-map',
     //入口文件配置
     entry: "./src/main.js",
     //出口文件的配置
@@ -22,7 +26,10 @@ module.exports = {
                 test:/\.css$/,
                 use:extractTextPlugin.extract({
                     fallback:'style-loader',
-                    use:'css-loader'
+                    use:[
+                        {loader:'css-loader',options:{ importLoaders: 1 }},
+                        {loader:'postcss-loader'}
+                    ]
                 })
             },{
                 test:/\.less$/,
@@ -53,6 +60,12 @@ module.exports = {
                         outputPath:'src/images/'//图片输出的位置
                     }
                 }]
+            },{
+                test:/\.(jsx|js)$/,
+                use:{
+                    loader:'babel-loader'
+                },
+                exclude:/node_modules/
             }
         ]
     },
@@ -66,7 +79,10 @@ module.exports = {
             hash:true,
             template:'./src/index.html'
         }),
-        new extractTextPlugin('src/css/styles.css')//css文件输出的位置
+        new extractTextPlugin('src/css/styles.css'),//css文件输出的位置
+        new purifyCssPlugin({
+            paths: glob.sync(path.join(__dirname,'src/*.html'))
+        })
     ],
     //配置webpack开发服务器
     devServer:{

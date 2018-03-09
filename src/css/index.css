@@ -5,6 +5,10 @@ body{
 
 #tupian{
     background-image: url(../images/manhua.png);
-    width: 466px;
-    height: 453px;
+    width: 46.6px;
+    height: 45.3px;
+}
+
+a{
+    color: red;
 }
