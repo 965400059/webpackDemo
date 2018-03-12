@@ -18,7 +18,7 @@ if(process.env.type== "dev"){
 
 module.exports = {
     //打包调试文件
-    devtool:'eval',
+    devtool:'eval-source-map',
     //入口文件配置
     entry: "./src/main.js",
     //出口文件的配置
@@ -82,7 +82,9 @@ module.exports = {
     },
     //插件，用于生产模板和各项功能
     plugins:[
-        new uglifyJsPlugin(),
+        new uglifyJsPlugin({
+            sourceMap:true
+        }),
         new htmlPlugin({
             minify:{
                 removeAttributeQuotes:true
