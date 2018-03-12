@@ -1,14 +1,24 @@
 const path = require('path');
-const uglify = require('uglifyjs-webpack-plugin');
+const uglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const htmlPlugin= require('html-webpack-plugin');
 const extractTextPlugin = require("extract-text-webpack-plugin");
-const website = {publicPath:"http://127.0.0.1:9527/"};
 const purifyCssPlugin = require('purifycss-webpack');
 const glob = require('glob');
 
+var website;
+if(process.env.type== "dev"){
+    website={
+        publicPath:"http://cdn.jspang.com/"
+    }
+}else{
+    website={
+        publicPath:"http://127.0.0.1:9527/"
+    }
+}
+
 module.exports = {
     //打包调试文件
-    devtool: 'source-map',
+    devtool:'eval',
     //入口文件配置
     entry: "./src/main.js",
     //出口文件的配置
@@ -17,6 +27,7 @@ module.exports = {
         filename: 'bundle.js',
         //输出的路径，__dirname是项目的根路径，这里表示，将文件输出到项目根路径下的dist文件下
         path: path.resolve(__dirname,'dist'),
+        //输出文件的路径，如http://127.0.0.1:9527/
         publicPath : website.publicPath
     },
     //模块：例如解读css,图片如何转换，压缩
@@ -52,7 +63,7 @@ module.exports = {
                     }]
                 })
             },{
-                test:/\.(png|jpg|gif)/,
+                test:/\.(png|jpg|gif)$/,
                 use:[{
                     loader:'url-loader',
                     options:{
@@ -71,7 +82,7 @@ module.exports = {
     },
     //插件，用于生产模板和各项功能
     plugins:[
-        new uglify(),
+        new uglifyJsPlugin(),
         new htmlPlugin({
             minify:{
                 removeAttributeQuotes:true
