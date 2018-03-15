@@ -1,6 +1,7 @@
 const path = require('path');
 const uglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const htmlPlugin= require('html-webpack-plugin');
+const webpack= require('webpack');
 const extractTextPlugin = require("extract-text-webpack-plugin");
 const purifyCssPlugin = require('purifycss-webpack');
 const glob = require('glob');
@@ -20,7 +21,10 @@ module.exports = {
     //打包调试文件
     devtool:'eval-source-map',
     //入口文件配置
-    entry: "./src/main.js",
+    entry:{
+        entry:'./src/main.js',
+        jquery:'jquery'
+    },
     //出口文件的配置
     output: {
         //输出的文件的名称
@@ -82,6 +86,10 @@ module.exports = {
     },
     //插件，用于生产模板和各项功能
     plugins:[
+        new webpack.BannerPlugin('author:weiwei'),//横幅
+        new webpack.ProvidePlugin({//全局引用
+            $:"jquery"
+        }),
         new uglifyJsPlugin({
             sourceMap:true
         }),
@@ -107,5 +115,34 @@ module.exports = {
         compress:true,
         //服务器端口号
         port:9527
+    },
+    optimization : {
+        splitChunks: {
+          cacheGroups: {
+            commons: {//
+              chunks: 'initial',
+              minChunks: 2, 
+              maxInitialRequests: 5,
+              minSize: 0
+            },
+            vendor: {//单独打包的外部插件
+              test: /node_modules/,
+              chunks: 'initial',
+              name: 'jquery',
+              filename:"assets/js/jquery.min.js",
+              priority: 10,
+              enforce: true
+            }
+          }
+        },
+        runtimeChunk : false//分块
+    },
+    watchOptions:{
+        //检测修改的时间，以毫秒为单位
+        poll:1000, 
+        //防止重复保存而发生重复编译错误。这里设置的500是半秒内重复保存，不进行打包操作
+        aggregateTimeout:500, 
+        //不监听的目录
+        ignored:/node_modules/, 
     }
 };
