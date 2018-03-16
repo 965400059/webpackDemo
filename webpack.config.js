@@ -5,6 +5,7 @@ const webpack= require('webpack');
 const extractTextPlugin = require("extract-text-webpack-plugin");
 const purifyCssPlugin = require('purifycss-webpack');
 const glob = require('glob');
+const copyWebpackPlugin= require("copy-webpack-plugin");
 
 var website;
 if(process.env.type== "dev"){
@@ -23,7 +24,8 @@ module.exports = {
     //入口文件配置
     entry:{
         entry:'./src/main.js',
-        jquery:'jquery'
+        jquery:'jquery',
+        vue:'vue'
     },
     //出口文件的配置
     output: {
@@ -76,7 +78,7 @@ module.exports = {
                     }
                 }]
             },{
-                test:/\.(jsx|js)$/,
+                test:/\.js$/,
                 use:{
                     loader:'babel-loader'
                 },
@@ -86,13 +88,19 @@ module.exports = {
     },
     //插件，用于生产模板和各项功能
     plugins:[
+        new webpack.optimize.CommonsChunkPlugin({//分块打包
+            //name对应入口文件中的名字，我们起的是jQuery
+            name:['jquery','vue'],
+            //把文件打包到哪里，是一个路径
+            filename:"assets/js/[name].js",
+            //最小打包的文件模块数，这里直接写2就好
+            minChunks:2
+        }),
         new webpack.BannerPlugin('author:weiwei'),//横幅
         new webpack.ProvidePlugin({//全局引用
             $:"jquery"
         }),
-        new uglifyJsPlugin({
-            sourceMap:true
-        }),
+        new uglifyJsPlugin(),
         new htmlPlugin({
             minify:{
                 removeAttributeQuotes:true
@@ -103,7 +111,12 @@ module.exports = {
         new extractTextPlugin('src/css/styles.css'),//css文件输出的位置
         new purifyCssPlugin({
             paths: glob.sync(path.join(__dirname,'src/*.html'))
-        })
+        }),
+        new copyWebpackPlugin([{//静态文件复制
+            from:__dirname+'/static',
+            to:'static'
+        }]),
+        //new webpack.HotModuleReplacementPlugin()//热更新
     ],
     //配置webpack开发服务器
     devServer:{
@@ -115,27 +128,6 @@ module.exports = {
         compress:true,
         //服务器端口号
         port:9527
-    },
-    optimization : {
-        splitChunks: {
-          cacheGroups: {
-            commons: {//
-              chunks: 'initial',
-              minChunks: 2, 
-              maxInitialRequests: 5,
-              minSize: 0
-            },
-            vendor: {//单独打包的外部插件
-              test: /node_modules/,
-              chunks: 'initial',
-              name: 'jquery',
-              filename:"assets/js/jquery.min.js",
-              priority: 10,
-              enforce: true
-            }
-          }
-        },
-        runtimeChunk : false//分块
     },
     watchOptions:{
         //检测修改的时间，以毫秒为单位

@@ -9,3 +9,6 @@ document.write(s);
 weiwei();
 
 $('#title').html('Hello jquery');
+
+var json =require('../config.json');
+document.getElementById("json").innerHTML= json.name;
